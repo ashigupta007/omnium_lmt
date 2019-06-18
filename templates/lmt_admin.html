@@ -1,0 +1,83 @@
+<div class="maincont">
+
+	<style type="text/css">
+		table
+		{
+			width: 80%;
+		}
+		table tr td
+		{
+			padding-top: 20px;
+		}
+		.txt-sml
+		{
+			width: 400px;
+		}
+		.btn-sml
+		{
+			margin-top: 30px;
+		}
+	</style>
+	<nav class="nav-custom-top">
+		LMT Admin <div class="icon-container"><i class="far fa-user"></i></div>
+	</nav>
+
+	<div class="container-custom">
+	<form method="post">
+		{% csrf_token %}
+		
+	
+	<table>
+
+		<tr>
+			<td><label>Tc Root : </label></td> <td><input type="text" name="tc_root" class="txt-sml" placeholder="TC ROOT" value="{{tc_root}}"></td>
+		</tr>
+
+		<tr>
+			<td><label>Tc Data : </label></td> <td><input type="text" name="tc_data" class="txt-sml" placeholder="TC DATA" value="{{tc_data}}"></td>
+		</tr>
+
+		<tr>	
+			<td><label>PWD : </label></td> <td><input type="text" name="pwd" class="txt-sml" placeholder="PWD" value="{{pwd}}"></td>
+		</tr>
+		
+
+		<tr>
+			<td><label>Logfile Root : </label></td> <td><input type="text" name="logfile_root" class="txt-sml" placeholder="Logfile Root" value="{{logfile_root}}"></td>
+		</tr>
+
+		<tr>
+			<td><label>Admin Username: </label></td><td> <input type="text" name="admin_username" class="txt-sml" placeholder="Admin Username" value="{{admin_username}}"></td>
+		</tr>
+
+		<tr>
+			<td><label>Admin Password : </label></td><td> <input type="password" name="admin_pass" class="txt-sml" placeholder="Admin Password" value="admin_pass"></td>
+		</tr>
+	</table>
+
+	<button class="btn-sml" onclick="function save_data()">Save Changes</button>
+
+	</form>	
+	</div>
+</div>
+
+<script type="text/javascript">
+	function save_data()
+	{
+	$.ajax({
+		type: "POST",
+  		url: '/save_changes',
+  		data: {
+	        tc_root : $('input[name="tc_root"]').val(),
+	        tc_data : $('input[name="tc_data"]').val(),
+	        pwd : $('input[name="pwd"]').val(),
+	        logfile_root : $('input[name="logfile_root"]').val(),
+	        admin_username : $('input[name="admin_username"]').val(),
+	        admin_pass : $('input[name="admin_pass"]').val(),
+	    },
+	    success: function(result){
+	    	alert("Form Saved Sucessfuly");
+	    }
+	});
+	}
+</script>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+	<meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1, minimum-scale=1">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <link href="https://fonts.googleapis.com/css?family=Dosis" rel="stylesheet">
+    
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+
+    {% load staticfiles %}
+	<script src="{% static 'jquery-3.3.1.js' %}"></script>
+
+
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}" >
+
+
+    {% load staticfiles %}
+    <script src="{% static 'bootstrap.min.js' %}" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+    {% load staticfiles %}
+    <script src="{% static 'jquery-ui.js' %}"></script>
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static 'jquery-ui.css' %}">
+    {% load staticfiles %}
+    <script src="{% static 'plotly-latest.min.js' %}"></script>
+
+    {% load staticfiles %}
+    <style type="text/css" href="{%static 'jqmap.css'%}"></style>
+    
+    {% load staticfiles %}
+    <script src="{% static 'jquery.vmap.min.js' %}"></script>
+    
+    {% load staticfiles %}
+    <script type="text/javascript" src="{% static 'jquery.vmap.world.js' %}"></script>
+
+    <style type="text/css">
+        .preloader
+        {
+            height: 100%;
+            position: absolute;
+            z-index: 999;
+            background-color:#f2f3f3;
+            color: #7A7A7A;
+            right: 0px;
+            top: 0px;
+            display:none;
+            text-align: center;
+        }
+        .preloader i
+        {
+            margin-top: 30%;
+        }
+    </style>
+
+</head>
+<body>
+
+    <!-- #4d6f9a     #554e81     #44bde7     #fbfbfb     #f2f3f3    -->
+
+
+    <nav class="navbar-custom-left">
+        
+        <div class="header">
+            <div class="icon"><i class="far fa-chart-bar"></i></div>
+            <div class="text">Omnium LMT</div>
+        </div>
+        
+
+        <div class="menu-holder">
+            <div class="menu-item active" id="welcome">
+                <div class="icon"><i class="fas fa-bolt"></i></div>
+                <div class="text">Welcome</div>
+            </div>
+            <div class="menu-item" id="lic_usage">
+                <div class="icon"><i class="fas fa-chart-area"></i></div>
+                <div class="text">License Usage</div>
+            </div>
+
+            <div class="menu-item" id="user_stats">
+                <div class="icon"><i class="fas fa-chart-bar"></i></div>
+                <div class="text">User Statistics</div>
+            </div>
+
+            <div class="menu-item" id="lmt_admin">
+                <div class="icon"><i class="far fa-user"></i></div>
+                <div class="text">Admin</div>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            <div class="icon" id="toggle_btn">
+                <i class="fas fa-angle-left"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div id="main-view">
+        
+    </div>
+
+    <div class="preloader">
+        <i class="fas fa-circle-notch fa-3x fa-spin"></i>   
+    </div>
+</body>
+<script type="text/javascript">
+        
+        var nav_width= $('.navbar-custom-left').width();
+        var doc_width= $(document).width();
+        var main_view_width= doc_width - nav_width;
+        $('#main-view').css("width" , main_view_width);
+        $('.preloader').css("width" , main_view_width);
+        $("#main-view").load('/welcome');
+        nav_status= 1;
+        $('#toggle_btn').click(function(){
+            if(nav_status ==1)
+            {
+                $('.text').hide();
+
+                var nav_width_new= $('.navbar-custom-left').width();
+                var main_view_width= doc_width - nav_width_new;
+
+                $('#main-view').animate({ width : main_view_width}, 100);
+                $('.preloader').animate({ width : main_view_width}, 100);
+                nav_status=0;
+                $('#toggle_btn').children('i').toggleClass('fa-angle-right');
+                $('#toggle_btn').children('i').toggleClass('fa-angle-left');
+
+            }
+            else
+            {
+                $('.text').show();
+                var nav_width_new= $('.navbar-custom-left').width();
+                var main_view_width= doc_width - nav_width_new;
+                $('#toggle_btn').children('i').toggleClass('fa-angle-right');
+                $('#toggle_btn').children('i').toggleClass('fa-angle-left');
+
+                $('#main-view').animate({ width : main_view_width}, 100);
+                $('.preloader').animate({ width : main_view_width}, 100);
+                nav_status=1;
+            }
+        })
+
+        
+
+        $( window ).resize(function() {
+            doc_width= $(document).width();
+            nav_width_new= $('.navbar-custom-left').width();
+            main_view_width= doc_width - nav_width_new;
+            $('#main-view').width(main_view_width);
+            $('.preloader').width(main_view_width);
+        });
+
+        $('#lic_usage').click(function(){
+            $('.preloader').show();
+            $('.menu-item').removeClass('active');
+            $(this).addClass('active');
+
+            $("#main-view").load('/stats', function(){
+                $('.preloader').delay(350).fadeOut('slow');
+            });
+        });
+
+
+
+
+        $('#welcome').click(function(){
+            $('.menu-item').removeClass('active');
+            $(this).addClass('active');
+            $("#main-view").load('/welcome');
+        });
+
+
+
+        $('#user_stats').click(function(){
+            $('.preloader').show();
+            $('.menu-item').removeClass('active');
+            $(this).addClass('active');
+            $("#main-view").load('/userstats', function(){
+                $('.preloader').delay(350).fadeOut('slow');
+            });
+        });
+
+        $('#lmt_admin').click(function(){
+            $('.menu-item').removeClass('active');
+            $(this).addClass('active');
+            $("#main-view").load('/lmt_admin');
+        });
+
+
+    </script>
+
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+
+
+<div class="maincont">
+	<nav class="nav-custom-top">
+		Statistics <div class="icon-container"><i class="fas fa-chart-area"></i></div>
+	</nav>
+
+	<div class="container-custom">
+  
+
+    <div class="col-sm-12">
+      <h3 class="small-heading"><i class="fas fa-server"></i>  Selected License: </h3>
+      <h3 class="small-heading" style="display:inline">Primary License</h3>
+        <select class="licence_name_primary">
+              <option value="null"> - - - - </option>
+              <option value="NX12100N">NX Main-NX12100N</option>
+              <option value="nx_integration">NX Integration</option>
+              <option value="teamcenter_author" selected>Teamcenter Author</option>
+              <option value="teamcenter_consumer">Teamcenter Consumer</option>
+              <option value="visview_base">Vis View-Base</option>
+        </select>
+
+      <h3 class="small-heading" style="display:inline; margin-left:30px">Secondary License</h3>  <select class="licence_name_secondary">
+
+          <option value="null"> - - - - </option>
+          {% for licence in no_of_line %}
+              {% if licence == "NX12100N" or licence == "nx_integration" or licence == "teamcenter_author" or licence == "teamcenter_consumer" or licence == "visview_base" %}
+              
+              {% else %}  
+              <option value="{{licence}}">{{licence}}</option>
+              {% endif %}
+          {% endfor %}
+        </select>      
+    </div>
+
+		<!-- <canvas id="myChart"></canvas> -->
+    <div id="tester" style="width:100%;display: block;margin-top: 100px;"></div>
+
+    <div class="col-sm-6">
+      <h3 class="small-heading"><i class="fas fa-clipboard-list"></i> Licence Per Server Usage</h3>
+          <div id="usage_per_server" style="width:100%;display: block;height:200px;"></div>
+    </div>
+    <div class="col-sm-6">
+      <h3 class="small-heading"><i class="fas fa-clipboard-list"></i>Usage Summary</h3>
+      <table class="custom-table">
+        <tr>
+          <td></td>
+          <td>Minimum</td>
+          <td>Maximum</td>
+          <td>Average</td>
+        </tr>
+        <tr>
+          <td>Last 30 Days</td>
+          <td class="min_30"></td>
+          <td class="max_30"></td>
+          <td class="avg_30"></td>
+        </tr>
+        <tr>
+          <td>Last 60 Days</td>
+          <td class="min_60"></td>
+          <td class="max_60"></td>
+          <td class="avg_60"></td>
+        </tr>
+        <tr>
+          <td>Last 90 Days</td>
+          <td class="min_90"></td>
+          <td class="max_90"></td>
+          <td class="avg_90"></td>
+        </tr>
+      </table>
+    </div>
+	</div>
+</div>
+
+
+
+<script type="text/javascript">
+
+  var default_licence='teamcenter_consumer';
+  var data_received= "{% autoescape off %} {{no_of_line}} {% endautoescape %}";
+  var total_data = data_received.toString().replace(/'/g, '"');
+
+  var json_data = JSON.parse(total_data);
+  var x_axis={
+      data : [],
+    };
+	var active_license={
+        	type: "scatter",
+          mode: "lines",
+          name: 'Active License',
+          line:{
+            color: '#86BBD8',
+          },
+          x:x_axis.data,
+          y:[],
+        };
+
+     var total_license={
+        	label: 'Total License',
+            data: [] ,
+            // backgroundColor:'rgba(255, 69, 0, 0.7)',
+            borderColor: '#FF4500',
+            fill: false,
+            pointRadius: 0,
+            borderWidth:1,
+        };
+
+   
+ for(time in json_data[default_licence])
+  {
+    x_axis.data.push(time);
+    total_count=0;
+    for(server in json_data[default_licence][time])
+    {
+      total_count += json_data[default_licence][time][server]['count'];
+    }
+    active_license.y.push(total_count);
+  }
+
+  
+
+
+    time_graph= document.getElementById('tester');
+    Plotly.plot( time_graph, [active_license], {
+    margin: { t: 0 } } );
+
+    time_graph.on('plotly_hover', function(data){
+
+      var xaxis = parseInt(data.xvals[0]);
+      var x_axis_value=  x_axis.data[xaxis];
+      if(json_data[default_licence][x_axis_value]['server1'] !== undefined)
+      {
+        server1_data=json_data[default_licence][x_axis_value]['server1']['count'];
+      }
+      else
+      {
+        server1_data=0;
+      }
+      
+
+      if(json_data[default_licence][x_axis_value]['server2'] !== undefined)
+      {
+        server2_data=json_data[default_licence][x_axis_value]['server2']['count'];
+      }
+      else
+      {
+        server2_data=0;
+      }
+
+      if(json_data[default_licence][x_axis_value]['server3'] !== undefined)
+      {
+        server3_data=json_data[default_licence][x_axis_value]['server3']['count'];
+      }
+      else
+      {
+        server3_data=0;
+      }
+
+      data =[{
+          x: ['Server 1', 'Server 2', 'Server 3'],
+          y: [server1_data,server2_data,server3_data],
+          type: 'bar'
+        }];
+
+        Plotly.newPlot(usage_per_server, data, {margin: { t: 0 } });
+    });
+
+    usage_per_server= document.getElementById('usage_per_server');
+    var data = [
+    {
+    x: ['Server 1', 'Server 2', 'Server 3'],
+    y: [0, 0, 0],
+    type: 'bar'
+    }
+    ];
+
+    Plotly.newPlot(usage_per_server, data, {
+    margin: { t: 0 } });
+
+
+
+
+    var data_30_days = active_license.y.slice(-8640);
+    var data_60_days = active_license.y.slice(-17280);
+    var data_90_days = active_license.y.slice(-25920);
+    
+    console.log(Math.max(...data_60_days));
+
+
+    $('.min_30').append(Math.min(...data_30_days));
+    $('.max_30').append(Math.max(...data_30_days));
+    $('.avg_30').append(parseInt(eval(data_30_days.join('+'))/data_30_days.length));
+
+    $('.min_60').append(Math.min(...data_60_days));
+    $('.max_60').append(Math.max(...data_60_days));
+    $('.avg_60').append(parseInt(eval(data_60_days.join('+'))/data_60_days.length));
+
+    $('.min_90').append(Math.min(...data_90_days));
+    $('.max_90').append(Math.max(...data_90_days));
+    $('.avg_90').append(parseInt(eval(data_90_days.join('+'))/data_90_days.length));
+
+
+
+    $('.licence_name_primary').change(function(){
+
+    $('.licence_name_secondary').val("null");
+    var default_licence = $(this).val();
+    new_x_axis_array=[];
+    new_data_array=[];
+
+    for(time in json_data[default_licence])
+    {
+      new_x_axis_array.push(time);
+      total_count=0;
+      for(server in json_data[default_licence][time])
+      {
+        total_count += json_data[default_licence][time][server]['count'];
+      }
+      new_data_array.push(total_count);
+    }
+
+    x_axis.data = new_x_axis_array;
+    active_license.y = new_data_array;
+
+    Plotly.redraw(time_graph, active_license, {
+    margin: { t: 0 } });
+
+    var data_30_days = active_license.y.slice(-8640);
+    var data_60_days = active_license.y.slice(-17280);
+    var data_90_days = active_license.y.slice(-25920);
+
+    $('.min_30').empty();
+    $('.max_30').empty();
+    $('.avg_30').empty();
+    $('.min_60').empty();
+    $('.max_60').empty();
+    $('.avg_60').empty();
+    $('.min_90').empty();
+    $('.max_90').empty();
+    $('.avg_90').empty();
+
+    $('.min_30').append(Math.min(...data_30_days));
+    $('.max_30').append(Math.max(...data_30_days));
+    $('.avg_30').append(parseInt(eval(data_30_days.join('+'))/data_30_days.length)); //8640
+
+    $('.min_60').append(Math.min(...data_60_days));
+    $('.max_60').append(Math.max(...data_60_days));
+    $('.avg_60').append(parseInt(eval(data_60_days.join('+'))/data_60_days.length));// 17280
+
+    $('.min_90').append(Math.min(...data_90_days));
+    $('.max_90').append(Math.max(...data_90_days));
+    $('.avg_90').append(parseInt(eval(data_90_days.join('+'))/data_90_days.length));//25920
+    });
+
+
+
+
+
+    $('.licence_name_secondary').change(function(){
+
+    $('.licence_name_primary').val("null");
+    var default_licence = $(this).val();
+    new_x_axis_array=[];
+    new_data_array=[];
+
+
+    // For updating with new x axis and y axis
+
+    for(time in json_data[default_licence])
+    {
+      new_x_axis_array.push(time);
+      total_count=0;
+      for(server in json_data[default_licence][time])
+      {
+        total_count += json_data[default_licence][time][server]['count'];
+      }
+      new_data_array.push(total_count);
+    }
+
+    x_axis.data = new_x_axis_array;
+    active_license.y = new_data_array;
+
+    // myChart.update(); some function in here for updating plotly graph
+    Plotly.redraw(time_graph, active_license, {
+    margin: { t: 0 } });
+
+    var data_30_days = active_license.y.slice(-8640);
+    var data_60_days = active_license.y.slice(-17280);
+    var data_90_days = active_license.y.slice(-25920);
+    $('.min_30').empty();
+    $('.max_30').empty();
+    $('.avg_30').empty();
+    $('.min_60').empty();
+    $('.max_60').empty();
+    $('.avg_60').empty();
+    $('.min_90').empty();
+    $('.max_90').empty();
+    $('.avg_90').empty();
+
+    $('.min_30').append(Math.min(...data_30_days));
+    $('.max_30').append(Math.max(...data_30_days));
+    $('.avg_30').append(parseInt(eval(data_30_days.join('+'))/data_30_days.length));
+
+    $('.min_60').append(Math.min(...data_60_days));
+    $('.max_60').append(Math.max(...data_60_days));
+    $('.avg_60').append(parseInt(eval(data_60_days.join('+'))/data_60_days.length));
+
+    $('.min_90').append(Math.min(...data_90_days));
+    $('.max_90').append(Math.max(...data_90_days));
+    $('.avg_90').append(parseInt(eval(data_90_days.join('+'))/data_90_days.length));
+
+    });
+
+</script>
+</script>
+</html>
